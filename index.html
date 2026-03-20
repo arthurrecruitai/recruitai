@@ -6,6 +6,7 @@
   <title>RecruitAI — Triez vos CV 10x plus vite</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
@@ -249,7 +250,7 @@
           <li><span class="check"></span>1 utilisateur</li>
           <li><span class="check"></span>Support email</li>
         </ul>
-        <button class="plan-btn o" onclick="window.open('https://buy.stripe.com/test_4gM00i9bA98A3Mj0yKao800')">Commencer</button>
+        <button class="plan-btn o" onclick="go('signup')">Commencer</button>
       </div>
       <div class="plan pop">
         <div class="pop-badge">⭐ Le plus populaire</div>
@@ -264,7 +265,7 @@
           <li><span class="check"></span>Historique illimité</li>
           <li><span class="check"></span>Support prioritaire</li>
         </ul>
-       <button class="plan-btn f" onclick="window.open('https://buy.stripe.com/test_4gMaEW4VkbgI3Mj95gao801')">Commencer</button>
+        <button class="plan-btn f" onclick="go('signup')">Commencer</button>
       </div>
       <div class="plan">
         <div class="plan-name">Enterprise</div>
@@ -381,6 +382,40 @@
 <script>
 // Clé API sécurisée côté serveur via /api/analyze (Vercel Function)
 
+// ─── SUPABASE ───
+const SUPABASE_URL = "https://rudefoqbcdnaaprbahso.supabase.co";
+const SUPABASE_KEY = "sb_publishable_QwTERgg_r6kSpplbK6TfNA_h83ZGg6d";
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+async function createOrGetUser(email) {
+  const { data, error } = await _supabase.from("users").select("*").eq("email", email).single();
+  if (error && error.code === "PGRST116") {
+    const { data: newUser } = await _supabase.from("users").insert([{ email, plan: "trial", cv_count: 0, trial_start: new Date().toISOString() }]).select().single();
+    return newUser;
+  }
+  return data;
+}
+
+async function checkTrialExpired(email) {
+  const user = await createOrGetUser(email);
+  if (!user || user.plan !== "trial") return false;
+  const diffDays = (new Date() - new Date(user.trial_start)) / (1000 * 60 * 60 * 24);
+  return diffDays > 14;
+}
+
+async function checkCvLimit(email) {
+  const user = await createOrGetUser(email);
+  if (!user) return false;
+  const limits = { trial: 10, starter: 50, pro: 300, enterprise: 99999 };
+  return user.cv_count >= (limits[user.plan] || 10);
+}
+
+async function incrementCvCount(email, count) {
+  const user = await createOrGetUser(email);
+  if (!user) return;
+  await _supabase.from("users").update({ cv_count: (user.cv_count || 0) + count }).eq("email", email);
+}
+
 // ─── STATE ───
 let users = JSON.parse(localStorage.getItem('rai_users') || '{}');
 let session = JSON.parse(localStorage.getItem('rai_session') || 'null');
@@ -429,6 +464,7 @@ function doSignup() {
   localStorage.setItem('rai_session', JSON.stringify(session));
   document.getElementById('signup-err').style.display = 'none';
   updateNav();
+  createOrGetUser(email);
   go('dashboard');
 }
 
@@ -572,6 +608,19 @@ function renderResult(r) {
 }
 
 async function analyze() {
+  // Vérification des limites Supabase
+  if (session) {
+    const expired = await checkTrialExpired(session.email);
+    if (expired) {
+      alert("Votre essai gratuit de 14 jours est terminé. Passez à un plan payant pour continuer !");
+      go("pricing"); return;
+    }
+    const limitReached = await checkCvLimit(session.email);
+    if (limitReached) {
+      alert("Vous avez atteint votre limite de CV ce mois-ci. Passez à un plan supérieur !");
+      go("pricing"); return;
+    }
+  }
   const job = document.getElementById('job-desc').value.trim();
   if (!job || cvList.length === 0) return;
   const btn = document.getElementById('go-btn');
@@ -597,6 +646,7 @@ async function analyze() {
   }
 
   results.sort((a, b) => b.score - a.score);
+  if (session) await incrementCvCount(session.email, results.length);
   const avg = Math.round(results.reduce((a, r) => a + r.score, 0) / results.length);
   const top = results.filter(r => r.score >= 70).length;
   const conv = results.filter(r => r.recommendation === 'OUI').length;
