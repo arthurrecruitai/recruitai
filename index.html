@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RecruitAI — Triez vos CV 10x plus vite</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
@@ -157,30 +160,11 @@
     .empty{text-align:center;padding:3rem 1rem;color:var(--muted);font-size:14px}
     .paste-hint{font-size:12px;color:var(--hint);margin-top:5px}
 
-    /* ABOUT */
-    .about-section{max-width:740px;margin:0 auto;padding:3rem 2rem 4rem}
-    .about-hero{text-align:center;margin-bottom:3rem}
-    .about-hero h1{font-family:'Syne',sans-serif;font-size:36px;font-weight:600;color:var(--text);margin-bottom:.75rem}
-    .about-hero p{font-size:16px;color:var(--muted);line-height:1.7}
-    .founder-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:2rem;display:flex;align-items:center;gap:1.75rem;margin-bottom:2.5rem}
-    .founder-av{width:64px;height:64px;border-radius:50%;background:var(--accent-light);color:var(--accent-text);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:22px;font-weight:600;flex-shrink:0}
-    .founder-info h2{font-family:'Syne',sans-serif;font-size:18px;font-weight:600;color:var(--text);margin-bottom:3px}
-    .founder-info .founder-role{font-size:13px;color:var(--accent-text);font-weight:500;margin-bottom:10px}
-    .founder-info a{color:var(--accent-text);text-decoration:none;font-size:13px}.founder-info a:hover{text-decoration:underline}
-    .legal-block{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:2rem;margin-bottom:1.1rem}
-    .legal-block h3{font-family:'Syne',sans-serif;font-size:16px;font-weight:600;color:var(--text);margin-bottom:1rem;padding-bottom:.75rem;border-bottom:1px solid var(--border)}
-    .legal-block p,.legal-block li{font-size:13px;color:var(--muted);line-height:1.75;margin-bottom:.5rem}
-    .legal-block ul{list-style:none;padding:0}
-    .legal-block ul li::before{content:'— ';color:var(--hint)}
-    .legal-block strong{color:var(--text);font-weight:500}
-    .legal-note{font-size:12px;color:var(--hint);text-align:center;margin-top:2rem;line-height:1.6}
-
     @media(max-width:700px){
       .feat-grid,.plans,.stats-row{grid-template-columns:1fr}
       .hero h1{font-size:34px}
       nav{padding:0 1rem}
       .dash-wrap,.feat-section,.pricing-section{padding:1rem}
-      .founder-card{flex-direction:column;text-align:center}
     }
   </style>
 </head>
@@ -191,7 +175,6 @@
   <div class="nav-r" id="nav-r">
     <a class="nbtn ghost" onclick="go('landing')">Accueil</a>
     <a class="nbtn ghost" onclick="go('pricing')">Tarifs</a>
-    <a class="nbtn ghost" onclick="go('about')">À propos</a>
     <a class="nbtn ghost" onclick="go('login')">Connexion</a>
     <a class="nbtn solid" onclick="go('signup')">Essai gratuit</a>
   </div>
@@ -367,10 +350,10 @@
         <div class="lbl">CV des candidats</div>
         <div class="drop" onclick="document.getElementById('f-input').click()">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9a9a9a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg>
-          <p>Cliquez pour importer des CV (.txt)</p>
+          <p>Cliquez pour importer des CV (.pdf ou .txt)</p>
           <small>Ou collez le texte d'un CV dans la zone ci-dessous puis appuyez sur Entrée</small>
         </div>
-        <input type="file" id="f-input" accept=".txt" multiple style="display:none" onchange="handleFiles(event)">
+        <input type="file" id="f-input" accept=".txt,.pdf" multiple style="display:none" onchange="handleFiles(event)">
         <div class="chips" id="cv-chips"></div>
         <textarea id="cv-paste" placeholder="Collez le texte d'un CV ici, puis appuyez sur Entrée pour l'ajouter..." style="margin-top:12px;min-height:80px"></textarea>
         <div class="paste-hint">↵ Entrée pour ajouter ce CV à la liste</div>
@@ -396,90 +379,42 @@
   </div>
 </div>
 
-<!-- ═══ ABOUT / MENTIONS LÉGALES ═══ -->
-<div class="page" id="page-about">
-  <div class="about-section">
-    <div class="about-hero">
-      <div class="pill">À propos de RecruitAI</div>
-      <h1>Créé par un recruteur, pour les recruteurs</h1>
-      <p>RecruitAI est un outil SaaS français qui automatise le tri de CV grâce à l'intelligence artificielle, pour que vos équipes RH se concentrent sur l'essentiel : les humains.</p>
-    </div>
-
-    <div class="founder-card">
-      <div class="founder-av">AI</div>
-      <div class="founder-info">
-        <h2>Arthur Inizan</h2>
-        <div class="founder-role">Fondateur &amp; Développeur — RecruitAI</div>
-        <a href="mailto:arthurinizan@gmail.com">arthurinizan@gmail.com</a>
-      </div>
-    </div>
-
-    <!-- MENTIONS LÉGALES -->
-    <div class="section-tag" style="margin-bottom:.75rem">Mentions légales</div>
-
-    <div class="legal-block">
-      <h3>Éditeur du site</h3>
-      <ul>
-        <li><strong>Nom :</strong> Arthur Inizan</li>
-        <li><strong>Qualité :</strong> Entrepreneur individuel — Fondateur de RecruitAI</li>
-        <li><strong>SIRET :</strong> 102 762 051 00013</li>
-        <li><strong>Email :</strong> <a href="mailto:arthurinizan@gmail.com" style="color:var(--accent-text)">arthurinizan@gmail.com</a></li>
-        <li><strong>Directeur de la publication :</strong> Arthur Inizan</li>
-      </ul>
-    </div>
-
-    <div class="legal-block">
-      <h3>Hébergeur</h3>
-      <ul>
-        <li><strong>Société :</strong> Vercel Inc.</li>
-        <li><strong>Adresse :</strong> 440 N Barranca Ave #4133, Covina, CA 91723, États-Unis</li>
-        <li><strong>Site :</strong> vercel.com</li>
-      </ul>
-    </div>
-
-    <div class="legal-block">
-      <h3>Propriété intellectuelle</h3>
-      <p>L'ensemble des éléments constituant ce site (textes, graphismes, logiciels, code source, marque RecruitAI) est la propriété exclusive d'Arthur Inizan et est protégé par le droit français de la propriété intellectuelle. Toute reproduction, représentation ou diffusion, totale ou partielle, sans autorisation écrite préalable est interdite.</p>
-    </div>
-
-    <div class="legal-block">
-      <h3>Données personnelles &amp; RGPD</h3>
-      <p><strong>Responsable du traitement :</strong> Arthur Inizan — arthurinizan@gmail.com</p>
-      <p>RecruitAI collecte et traite les données suivantes :</p>
-      <ul>
-        <li><strong>Données de compte :</strong> nom, adresse email, mot de passe (stockés localement dans votre navigateur via localStorage).</li>
-        <li><strong>Données RH :</strong> les CV et fiches de poste que vous soumettez sont transmis à l'API Claude (Anthropic) pour analyse, puis affichés dans votre interface. Ils ne sont pas conservés sur nos serveurs au-delà de la durée du traitement.</li>
-      </ul>
-      <p><strong>Finalité :</strong> fourniture du service d'analyse de CV.</p>
-      <p><strong>Durée de conservation :</strong> les données de compte et l'historique des campagnes sont conservés dans votre navigateur jusqu'à leur suppression manuelle. Aucune donnée n'est stockée côté serveur de façon permanente.</p>
-      <p><strong>Vos droits :</strong> conformément au Règlement (UE) 2016/679 (RGPD) et à la loi Informatique et Libertés, vous disposez d'un droit d'accès, de rectification, d'effacement, de limitation et de portabilité de vos données. Pour exercer ces droits, contactez : <a href="mailto:arthurinizan@gmail.com" style="color:var(--accent-text)">arthurinizan@gmail.com</a>.</p>
-      <p><strong>Cookies :</strong> ce site n'utilise pas de cookies tiers à des fins publicitaires ou analytiques.</p>
-    </div>
-
-    <div class="legal-block">
-      <h3>Conditions générales d'utilisation</h3>
-      <p>L'accès et l'utilisation de RecruitAI impliquent l'acceptation des présentes conditions. Le service est fourni « en l'état » dans le cadre d'un abonnement mensuel sans engagement. L'utilisateur est seul responsable des données (CV, fiches de poste) qu'il soumet à l'analyse et garantit disposer des autorisations nécessaires pour traiter ces données personnelles de candidats.</p>
-      <p><strong>Droit de rétractation (particuliers) :</strong> conformément à l'article L221-18 du Code de la consommation, vous disposez d'un délai de 14 jours à compter de la souscription pour exercer votre droit de rétractation, sauf si vous avez expressément renoncé à ce droit en demandant l'accès immédiat au service.</p>
-      <p><strong>Résiliation :</strong> l'abonnement peut être résilié à tout moment depuis votre espace client, sans frais, avec effet à la fin de la période en cours.</p>
-    </div>
-
-    <div class="legal-block">
-      <h3>Responsabilité et limitation</h3>
-      <p>RecruitAI est un outil d'aide à la décision. Les scores et recommandations générés par l'IA sont fournis à titre indicatif et ne sauraient constituer la seule base d'une décision de recrutement. Arthur Inizan décline toute responsabilité quant à l'utilisation des résultats fournis par le service.</p>
-      <p>RecruitAI se réserve le droit de modifier ou interrompre le service à tout moment, avec un préavis raisonnable communiqué par email.</p>
-    </div>
-
-    <div class="legal-block">
-      <h3>Droit applicable &amp; juridiction</h3>
-      <p>Les présentes mentions légales sont régies par le droit français. En cas de litige, et à défaut de résolution amiable, les tribunaux français seront seuls compétents.</p>
-    </div>
-
-    <p class="legal-note">Mentions légales mises à jour le 30 mars 2026 — conformes à la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique (LCEN) et au Règlement (UE) 2016/679 (RGPD).</p>
-  </div>
-</div>
-
 <script>
 // Clé API sécurisée côté serveur via /api/analyze (Vercel Function)
+
+// ─── SUPABASE ───
+const SUPABASE_URL = "https://rudefoqbcdnaaprbahso.supabase.co";
+const SUPABASE_KEY = "sb_publishable_QwTERgg_r6kSpplbK6TfNA_h83ZGg6d";
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+async function createOrGetUser(email) {
+  const { data, error } = await _supabase.from("users").select("*").eq("email", email).single();
+  if (error && error.code === "PGRST116") {
+    const { data: newUser } = await _supabase.from("users").insert([{ email, plan: "trial", cv_count: 0, trial_start: new Date().toISOString() }]).select().single();
+    return newUser;
+  }
+  return data;
+}
+
+async function checkTrialExpired(email) {
+  const user = await createOrGetUser(email);
+  if (!user || user.plan !== "trial") return false;
+  const diffDays = (new Date() - new Date(user.trial_start)) / (1000 * 60 * 60 * 24);
+  return diffDays > 14;
+}
+
+async function checkCvLimit(email) {
+  const user = await createOrGetUser(email);
+  if (!user) return false;
+  const limits = { trial: 10, starter: 50, pro: 300, enterprise: 99999 };
+  return user.cv_count >= (limits[user.plan] || 10);
+}
+
+async function incrementCvCount(email, count) {
+  const user = await createOrGetUser(email);
+  if (!user) return;
+  await _supabase.from("users").update({ cv_count: (user.cv_count || 0) + count }).eq("email", email);
+}
 
 // ─── STATE ───
 let users = JSON.parse(localStorage.getItem('rai_users') || '{}');
@@ -504,13 +439,11 @@ function updateNav() {
         ${session.name.split(' ')[0]}
       </div>
       <a class="nbtn ghost" onclick="go('dashboard')">Dashboard</a>
-      <a class="nbtn ghost" onclick="go('about')">À propos</a>
       <a class="nbtn ghost" onclick="logout()">Déconnexion</a>`;
   } else {
     nr.innerHTML = `
       <a class="nbtn ghost" onclick="go('landing')">Accueil</a>
       <a class="nbtn ghost" onclick="go('pricing')">Tarifs</a>
-      <a class="nbtn ghost" onclick="go('about')">À propos</a>
       <a class="nbtn ghost" onclick="go('login')">Connexion</a>
       <a class="nbtn solid" onclick="go('signup')">Essai gratuit</a>`;
   }
@@ -531,6 +464,7 @@ function doSignup() {
   localStorage.setItem('rai_session', JSON.stringify(session));
   document.getElementById('signup-err').style.display = 'none';
   updateNav();
+  createOrGetUser(email);
   go('dashboard');
 }
 
@@ -594,12 +528,52 @@ function renderChips() {
 
 function removeCV(i) { cvList.splice(i, 1); renderChips(); }
 
-function handleFiles(e) {
-  Array.from(e.target.files).forEach(f => {
-    const r = new FileReader();
-    r.onload = ev => { cvList.push({ name: f.name, text: ev.target.result }); renderChips(); };
-    r.readAsText(f);
+async function extractPdfText(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const typedArray = new Uint8Array(e.target.result);
+        const pdf = await pdfjsLib.getDocument({ data: typedArray }).promise;
+        let text = '';
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const content = await page.getTextContent();
+          text += content.items.map(item => item.str).join(' ') + '\n';
+        }
+        resolve(text.trim());
+      } catch (err) {
+        reject(err);
+      }
+    };
+    reader.readAsArrayBuffer(file);
   });
+}
+
+async function handleFiles(e) {
+  const files = Array.from(e.target.files);
+  for (const f of files) {
+    try {
+      if (f.type === 'application/pdf' || f.name.endsWith('.pdf')) {
+        const chipsEl = document.getElementById('cv-chips');
+        const loadChip = document.createElement('div');
+        loadChip.className = 'chip';
+        loadChip.textContent = '⏳ Extraction de ' + f.name + '...';
+        chipsEl.appendChild(loadChip);
+        const text = await extractPdfText(f);
+        loadChip.remove();
+        cvList.push({ name: f.name, text });
+      } else {
+        const r = new FileReader();
+        r.onload = ev => { cvList.push({ name: f.name, text: ev.target.result }); renderChips(); };
+        r.readAsText(f);
+        continue;
+      }
+    } catch (err) {
+      console.error('Erreur PDF:', err);
+    }
+  }
+  renderChips();
 }
 
 // ─── ANALYSE IA ───
@@ -634,6 +608,19 @@ function renderResult(r) {
 }
 
 async function analyze() {
+  // Vérification des limites Supabase
+  if (session) {
+    const expired = await checkTrialExpired(session.email);
+    if (expired) {
+      alert("Votre essai gratuit de 14 jours est terminé. Passez à un plan payant pour continuer !");
+      go("pricing"); return;
+    }
+    const limitReached = await checkCvLimit(session.email);
+    if (limitReached) {
+      alert("Vous avez atteint votre limite de CV ce mois-ci. Passez à un plan supérieur !");
+      go("pricing"); return;
+    }
+  }
   const job = document.getElementById('job-desc').value.trim();
   if (!job || cvList.length === 0) return;
   const btn = document.getElementById('go-btn');
@@ -659,6 +646,7 @@ async function analyze() {
   }
 
   results.sort((a, b) => b.score - a.score);
+  if (session) await incrementCvCount(session.email, results.length);
   const avg = Math.round(results.reduce((a, r) => a + r.score, 0) / results.length);
   const top = results.filter(r => r.score >= 70).length;
   const conv = results.filter(r => r.recommendation === 'OUI').length;
