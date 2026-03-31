@@ -160,11 +160,30 @@
     .empty{text-align:center;padding:3rem 1rem;color:var(--muted);font-size:14px}
     .paste-hint{font-size:12px;color:var(--hint);margin-top:5px}
 
+    /* ABOUT */
+    .about-section{max-width:740px;margin:0 auto;padding:3rem 2rem 4rem}
+    .about-hero{text-align:center;margin-bottom:3rem}
+    .about-hero h1{font-family:'Syne',sans-serif;font-size:36px;font-weight:600;color:var(--text);margin-bottom:.75rem}
+    .about-hero p{font-size:16px;color:var(--muted);line-height:1.7}
+    .founder-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:2rem;display:flex;align-items:center;gap:1.75rem;margin-bottom:2.5rem}
+    .founder-av{width:64px;height:64px;border-radius:50%;background:var(--accent-light);color:var(--accent-text);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:22px;font-weight:600;flex-shrink:0}
+    .founder-info h2{font-family:'Syne',sans-serif;font-size:18px;font-weight:600;color:var(--text);margin-bottom:3px}
+    .founder-info .founder-role{font-size:13px;color:var(--accent-text);font-weight:500;margin-bottom:10px}
+    .founder-info a{color:var(--accent-text);text-decoration:none;font-size:13px}.founder-info a:hover{text-decoration:underline}
+    .legal-block{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:2rem;margin-bottom:1.1rem}
+    .legal-block h3{font-family:'Syne',sans-serif;font-size:16px;font-weight:600;color:var(--text);margin-bottom:1rem;padding-bottom:.75rem;border-bottom:1px solid var(--border)}
+    .legal-block p,.legal-block li{font-size:13px;color:var(--muted);line-height:1.75;margin-bottom:.5rem}
+    .legal-block ul{list-style:none;padding:0}
+    .legal-block ul li::before{content:'— ';color:var(--hint)}
+    .legal-block strong{color:var(--text);font-weight:500}
+    .legal-note{font-size:12px;color:var(--hint);text-align:center;margin-top:2rem;line-height:1.6}
+
     @media(max-width:700px){
       .feat-grid,.plans,.stats-row{grid-template-columns:1fr}
       .hero h1{font-size:34px}
       nav{padding:0 1rem}
       .dash-wrap,.feat-section,.pricing-section{padding:1rem}
+      .founder-card{flex-direction:column;text-align:center}
     }
   </style>
 </head>
@@ -175,6 +194,7 @@
   <div class="nav-r" id="nav-r">
     <a class="nbtn ghost" onclick="go('landing')">Accueil</a>
     <a class="nbtn ghost" onclick="go('pricing')">Tarifs</a>
+    <a class="nbtn ghost" onclick="go('about')">À propos</a>
     <a class="nbtn ghost" onclick="go('login')">Connexion</a>
     <a class="nbtn solid" onclick="go('signup')">Essai gratuit</a>
   </div>
@@ -439,11 +459,13 @@ function updateNav() {
         ${session.name.split(' ')[0]}
       </div>
       <a class="nbtn ghost" onclick="go('dashboard')">Dashboard</a>
+      <a class="nbtn ghost" onclick="go('about')">À propos</a>
       <a class="nbtn ghost" onclick="logout()">Déconnexion</a>`;
   } else {
     nr.innerHTML = `
       <a class="nbtn ghost" onclick="go('landing')">Accueil</a>
       <a class="nbtn ghost" onclick="go('pricing')">Tarifs</a>
+      <a class="nbtn ghost" onclick="go('about')">À propos</a>
       <a class="nbtn ghost" onclick="go('login')">Connexion</a>
       <a class="nbtn solid" onclick="go('signup')">Essai gratuit</a>`;
   }
@@ -761,5 +783,87 @@ document.addEventListener('DOMContentLoaded', () => {
 
 updateNav();
 </script>
+
+<!-- ═══ ABOUT / MENTIONS LÉGALES ═══ -->
+<div class="page" id="page-about">
+  <div class="about-section">
+    <div class="about-hero">
+      <div class="pill">À propos de RecruitAI</div>
+      <h1>Créé par un recruteur, pour les recruteurs</h1>
+      <p>RecruitAI est un outil SaaS français qui automatise le tri de CV grâce à l'intelligence artificielle, pour que vos équipes RH se concentrent sur l'essentiel : les humains.</p>
+    </div>
+
+    <div class="founder-card">
+      <div class="founder-av">AI</div>
+      <div class="founder-info">
+        <h2>Arthur Inizan</h2>
+        <div class="founder-role">Fondateur &amp; Développeur — RecruitAI</div>
+        <a href="mailto:arthurinizan@gmail.com">arthurinizan@gmail.com</a>
+      </div>
+    </div>
+
+    <div class="section-tag" style="margin-bottom:.75rem">Mentions légales</div>
+
+    <div class="legal-block">
+      <h3>Éditeur du site</h3>
+      <ul>
+        <li><strong>Nom :</strong> Arthur Inizan</li>
+        <li><strong>Qualité :</strong> Entrepreneur individuel — Fondateur de RecruitAI</li>
+        <li><strong>SIRET :</strong> 102 762 051 00013</li>
+        <li><strong>Email :</strong> <a href="mailto:arthurinizan@gmail.com" style="color:var(--accent-text)">arthurinizan@gmail.com</a></li>
+        <li><strong>Directeur de la publication :</strong> Arthur Inizan</li>
+      </ul>
+    </div>
+
+    <div class="legal-block">
+      <h3>Hébergeur</h3>
+      <ul>
+        <li><strong>Société :</strong> Vercel Inc.</li>
+        <li><strong>Adresse :</strong> 440 N Barranca Ave #4133, Covina, CA 91723, États-Unis</li>
+        <li><strong>Site :</strong> vercel.com</li>
+      </ul>
+    </div>
+
+    <div class="legal-block">
+      <h3>Propriété intellectuelle</h3>
+      <p>L'ensemble des éléments constituant ce site (textes, graphismes, logiciels, code source, marque RecruitAI) est la propriété exclusive d'Arthur Inizan et est protégé par le droit français de la propriété intellectuelle. Toute reproduction, représentation ou diffusion, totale ou partielle, sans autorisation écrite préalable est interdite.</p>
+    </div>
+
+    <div class="legal-block">
+      <h3>Données personnelles &amp; RGPD</h3>
+      <p><strong>Responsable du traitement :</strong> Arthur Inizan — arthurinizan@gmail.com</p>
+      <p>RecruitAI collecte et traite les données suivantes :</p>
+      <ul>
+        <li><strong>Données de compte :</strong> nom, adresse email, mot de passe (stockés localement dans votre navigateur via localStorage).</li>
+        <li><strong>Données RH :</strong> les CV et fiches de poste soumis sont transmis à l'API Claude (Anthropic) pour analyse, puis affichés dans votre interface. Ils ne sont pas conservés sur nos serveurs au-delà de la durée du traitement.</li>
+      </ul>
+      <p><strong>Finalité :</strong> fourniture du service d'analyse de CV.</p>
+      <p><strong>Durée de conservation :</strong> les données de compte et l'historique des campagnes sont conservés dans votre navigateur jusqu'à leur suppression manuelle. Aucune donnée n'est stockée côté serveur de façon permanente.</p>
+      <p><strong>Vos droits :</strong> conformément au Règlement (UE) 2016/679 (RGPD) et à la loi Informatique et Libertés, vous disposez d'un droit d'accès, de rectification, d'effacement, de limitation et de portabilité de vos données. Pour exercer ces droits : <a href="mailto:arthurinizan@gmail.com" style="color:var(--accent-text)">arthurinizan@gmail.com</a>.</p>
+      <p><strong>Cookies :</strong> ce site n'utilise pas de cookies tiers à des fins publicitaires ou analytiques.</p>
+    </div>
+
+    <div class="legal-block">
+      <h3>Conditions générales d'utilisation</h3>
+      <p>L'accès et l'utilisation de RecruitAI impliquent l'acceptation des présentes conditions. Le service est fourni « en l'état » dans le cadre d'un abonnement mensuel sans engagement. L'utilisateur est seul responsable des données (CV, fiches de poste) qu'il soumet à l'analyse et garantit disposer des autorisations nécessaires pour traiter ces données personnelles de candidats.</p>
+      <p><strong>Droit de rétractation (particuliers) :</strong> conformément à l'article L221-18 du Code de la consommation, vous disposez d'un délai de 14 jours à compter de la souscription pour exercer votre droit de rétractation, sauf si vous avez expressément renoncé à ce droit en demandant l'accès immédiat au service.</p>
+      <p><strong>Résiliation :</strong> l'abonnement peut être résilié à tout moment depuis votre espace client, sans frais, avec effet à la fin de la période en cours.</p>
+    </div>
+
+    <div class="legal-block">
+      <h3>Responsabilité et limitation</h3>
+      <p>RecruitAI est un outil d'aide à la décision. Les scores et recommandations générés par l'IA sont fournis à titre indicatif et ne sauraient constituer la seule base d'une décision de recrutement. Arthur Inizan décline toute responsabilité quant à l'utilisation des résultats fournis par le service.</p>
+      <p>RecruitAI se réserve le droit de modifier ou interrompre le service à tout moment, avec un préavis raisonnable communiqué par email.</p>
+    </div>
+
+    <div class="legal-block">
+      <h3>Droit applicable &amp; juridiction</h3>
+      <p>Les présentes mentions légales sont régies par le droit français. En cas de litige, et à défaut de résolution amiable, les tribunaux français seront seuls compétents.</p>
+    </div>
+
+    <p class="legal-note">Mentions légales mises à jour le 31 mars 2026 — conformes à la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique (LCEN) et au Règlement (UE) 2016/679 (RGPD).</p>
+  </div>
+</div>
+
 </body>
 </html>
