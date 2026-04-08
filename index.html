@@ -6,6 +6,7 @@
   <title>RecruitAI — Triez vos CV 10x plus vite</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
   <style>
@@ -601,13 +602,31 @@ async function extractPdfText(file) {
           const content = await page.getTextContent();
           text += content.items.map(item => item.str).join(' ') + '\n';
         }
-        resolve(text.trim());
+        resolve({ text: text.trim(), pdfDoc: pdf });
       } catch (err) {
         reject(err);
       }
     };
     reader.readAsArrayBuffer(file);
   });
+}
+
+async function ocrPdfText(pdfDoc, onProgress) {
+  const worker = await Tesseract.createWorker('fra+eng');
+  let fullText = '';
+  for (let i = 1; i <= pdfDoc.numPages; i++) {
+    if (onProgress) onProgress(i, pdfDoc.numPages);
+    const page = await pdfDoc.getPage(i);
+    const viewport = page.getViewport({ scale: 2.0 });
+    const canvas = document.createElement('canvas');
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+    const { data: { text } } = await worker.recognize(canvas);
+    fullText += text + '\n';
+  }
+  await worker.terminate();
+  return fullText.trim();
 }
 
 async function handleFiles(e) {
@@ -620,9 +639,16 @@ async function handleFiles(e) {
         loadChip.className = 'chip';
         loadChip.textContent = '⏳ Extraction de ' + f.name + '...';
         chipsEl.appendChild(loadChip);
-        const text = await extractPdfText(f);
+        const { text, pdfDoc } = await extractPdfText(f);
+        let finalText = text;
+        if (text.length < 50) {
+          loadChip.textContent = '🔍 OCR en cours pour ' + f.name + '...';
+          finalText = await ocrPdfText(pdfDoc, (page, total) => {
+            loadChip.textContent = `🔍 OCR ${f.name} — page ${page}/${total}...`;
+          });
+        }
         loadChip.remove();
-        cvList.push({ name: f.name, text });
+        cvList.push({ name: f.name, text: finalText });
       } else {
         const r = new FileReader();
         r.onload = ev => { cvList.push({ name: f.name, text: ev.target.result }); renderChips(); };
