@@ -160,6 +160,16 @@
     .empty{text-align:center;padding:3rem 1rem;color:var(--muted);font-size:14px}
     .paste-hint{font-size:12px;color:var(--hint);margin-top:5px}
 
+    /* FAQ */
+    .faq-section{max-width:700px;margin:2.5rem auto 1rem;padding:0 2rem 3rem}
+    .faq-item{border-bottom:1px solid var(--border);padding:.75rem 0}
+    .faq-item:last-child{border-bottom:none}
+    .faq-q{font-size:14px;font-weight:500;color:var(--text);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:.25rem 0;user-select:none}
+    .faq-q svg{width:16px;height:16px;stroke:var(--muted);flex-shrink:0;transition:transform .2s}
+    .faq-item.open .faq-q svg{transform:rotate(180deg)}
+    .faq-a{font-size:13px;color:var(--muted);line-height:1.7;max-height:0;overflow:hidden;transition:max-height .25s ease,padding .25s}
+    .faq-item.open .faq-a{max-height:200px;padding-top:.6rem}
+
     /* ABOUT */
     .about-section{max-width:740px;margin:0 auto;padding:3rem 2rem 4rem}
     .about-hero{text-align:center;margin-bottom:3rem}
@@ -301,6 +311,34 @@
         </ul>
         <button class="plan-btn o">Nous contacter</button>
       </div>
+    </div>
+  </div>
+  <div class="faq-section">
+    <div class="section-tag" style="margin-bottom:.5rem">FAQ</div>
+    <div class="section-title" style="margin-bottom:1.5rem">Questions fréquentes</div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Est-ce RGPD conforme ?<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="faq-a">Oui, hébergé en Europe, données supprimées après 30 jours, conforme au RGPD.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Quels formats de CV acceptez-vous ?<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="faq-a">PDF et fichiers texte (.txt).</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Puis-je annuler à tout moment ?<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="faq-a">Oui, sans engagement, sans frais, résiliation immédiate.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">L'IA peut-elle se tromper ?<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="faq-a">L'IA est un outil d'aide à la décision, le recruteur garde toujours le dernier mot.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Que se passe-t-il après les 14 jours gratuits ?<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="faq-a">Vous choisissez un plan payant ou vous arrêtez, sans carte bancaire requise pour le test.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Combien de CV puis-je analyser ?<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="faq-a">Starter : 50 CV/mois — Pro : 300 CV/mois — Enterprise : illimité.</div>
     </div>
   </div>
 </div>
@@ -755,6 +793,14 @@ function exportCSV() {
   a.download = 'resultats_cv_recruitai.csv';
   a.click();
   URL.revokeObjectURL(a.href);
+}
+
+// ─── FAQ ───
+function toggleFaq(el) {
+  const item = el.closest('.faq-item');
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
 }
 
 // ─── COLLER UN CV ───
