@@ -23,9 +23,11 @@ export default async function handler(req, res) {
         max_tokens: 1024,
         messages: [{
           role: 'user',
-          content: `Expert RH. Analyse ce CV par rapport à la fiche de poste. Réponds UNIQUEMENT en JSON sans markdown ni backticks.
+          content: `Expert RH. Le texte du CV ci-dessous provient d'une extraction PDF automatique : il peut être désordonné (mise en page en colonnes, dates séparées de leur contexte, sections mélangées). Reconstitue mentalement la structure logique du CV avant de l'analyser.
+
+Analyse ce CV par rapport à la fiche de poste. Réponds UNIQUEMENT en JSON sans markdown ni backticks.
 FICHE DE POSTE: ${job}
-CV: ${cv}
+CV (texte brut extrait, potentiellement désordonné): ${cv}
 Format JSON exact:
 {"name":"Prénom Nom du candidat","email":"email du candidat ou null si absent","title":"Poste actuel ou dernier poste","score":<entier 0-100>,"criteria":[{"name":"Expérience","score":"X/10"},{"name":"Compétences","score":"X/10"},{"name":"Formation","score":"X/10"},{"name":"Adéquation","score":"X/10"}],"summary":"2 phrases sur les points forts et points faibles du candidat.","recommendation":"OUI"|"PEUT-ÊTRE"|"NON"}`
         }]
