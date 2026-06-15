@@ -19,12 +19,11 @@ export default async function handler(req, res) {
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-6',
         max_tokens: 1024,
         messages: [{
           role: 'user',
           content: `Expert RH. Le texte du CV ci-dessous provient d'une extraction PDF automatique : il peut être désordonné (mise en page en colonnes, dates séparées de leur contexte, sections mélangées). Reconstitue mentalement la structure logique du CV avant de l'analyser.
-
 Analyse ce CV par rapport à la fiche de poste. Réponds UNIQUEMENT en JSON sans markdown ni backticks.
 FICHE DE POSTE: ${job}
 CV (texte brut extrait, potentiellement désordonné): ${cv}
