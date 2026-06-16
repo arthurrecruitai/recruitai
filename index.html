@@ -718,6 +718,7 @@ async function analyze() {
   }
 
   results.sort((a, b) => b.score - a.score);
+  document.getElementById('results-list').innerHTML = results.map(r => renderResult(r)).join('');
   if (session) await incrementCvCount(session.email, results.length);
   const avg = Math.round(results.reduce((a, r) => a + r.score, 0) / results.length);
   const top = results.filter(r => r.score >= 70).length;
