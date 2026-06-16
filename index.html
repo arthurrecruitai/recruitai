@@ -685,6 +685,9 @@ function renderResult(r) {
 }
 
 async function analyze() {
+  const btn = document.getElementById('go-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="btn-spin"></span>Vérification...';
   if (session) {
     const expired = await checkTrialExpired(session.email);
     if (expired) { alert("Votre essai gratuit de 14 jours est terminé. Passez à un plan payant pour continuer !"); go("pricing"); return; }
@@ -693,8 +696,6 @@ async function analyze() {
   }
   const job = document.getElementById('job-desc').value.trim();
   if (!job || cvList.length === 0) return;
-  const btn = document.getElementById('go-btn');
-  btn.disabled = true;
   btn.innerHTML = '<span class="btn-spin"></span>Analyse en cours...';
   results = [];
   switchDTab('results');
