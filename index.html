@@ -125,8 +125,9 @@
     .chip{display:inline-flex;align-items:center;gap:5px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:4px 11px;font-size:12px;color:var(--text)}
     .chip button{background:none;border:none;color:var(--hint);cursor:pointer;font-size:14px;line-height:1;padding:0}
     .chip button:hover{color:var(--red)}
-    .go-btn{width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;transition:opacity .15s}
+    .go-btn{width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;transition:opacity .15s;display:flex;align-items:center;justify-content:center;gap:10px}
     .go-btn:hover{opacity:.88}.go-btn:disabled{opacity:.35;cursor:not-allowed}
+    .go-btn .btn-spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
     .metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:1.1rem}
     .metric{background:var(--bg2);border-radius:9px;padding:.875rem 1rem}
     .metric-l{font-size:12px;color:var(--muted);margin-bottom:4px}
@@ -439,9 +440,6 @@
 </div>
 
 <script>
-// Clé API sécurisée côté serveur via /api/analyze (Vercel Function)
-
-// ─── SUPABASE ───
 const SUPABASE_URL = "https://rudefoqbcdnaaprbahso.supabase.co";
 const SUPABASE_KEY = "sb_publishable_QwTERgg_r6kSpplbK6TfNA_h83ZGg6d";
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -475,13 +473,11 @@ async function incrementCvCount(email, count) {
   await _supabase.from("users").update({ cv_count: (user.cv_count || 0) + count }).eq("email", email);
 }
 
-// ─── STATE ───
 let users = JSON.parse(localStorage.getItem('rai_users') || '{}');
 let session = JSON.parse(localStorage.getItem('rai_session') || 'null');
 let history = JSON.parse(localStorage.getItem('rai_history') || '[]');
 let cvList = [], results = [];
 
-// ─── NAVIGATION ───
 function go(p) {
   document.querySelectorAll('.page').forEach(el => el.classList.remove('on'));
   document.getElementById('page-' + p).classList.add('on');
@@ -510,12 +506,10 @@ function updateNav() {
   }
 }
 
-// ─── AUTH ───
 function doSignup() {
   const name = document.getElementById('signup-name').value.trim();
   const email = document.getElementById('signup-email').value.trim();
   const pw = document.getElementById('signup-pw').value;
-  const err = document.getElementById('signup-err');
   if (!name || !email || !pw) { showErr('signup-err', 'Veuillez remplir tous les champs.'); return; }
   if (pw.length < 6) { showErr('signup-err', 'Mot de passe trop court (6 caractères minimum).'); return; }
   if (users[email]) { showErr('signup-err', 'Cet email est déjà utilisé.'); return; }
@@ -553,7 +547,6 @@ function showErr(id, msg) {
   el.textContent = msg;
 }
 
-// ─── DASHBOARD ───
 function renderDashboard() {
   if (!session) { go('login'); return; }
   const u = users[session.email];
@@ -579,7 +572,6 @@ function switchDTab(t) {
   });
 }
 
-// ─── GESTION CV ───
 function renderChips() {
   document.getElementById('cv-chips').innerHTML = cvList.map((cv, i) =>
     `<div class="chip">📄 ${cv.name}<button onclick="removeCV(${i})">×</button></div>`
@@ -662,7 +654,6 @@ async function handleFiles(e) {
   renderChips();
 }
 
-// ─── ANALYSE IA ───
 function sc(s) { return s >= 70 ? 'h' : s >= 45 ? 'm' : 'l'; }
 function ini(n) { return (n || '?').split(' ').map(w => w[0] || '').join('').toUpperCase().slice(0, 2) || '?'; }
 
@@ -694,23 +685,17 @@ function renderResult(r) {
 }
 
 async function analyze() {
-  // Vérification des limites Supabase
   if (session) {
     const expired = await checkTrialExpired(session.email);
-    if (expired) {
-      alert("Votre essai gratuit de 14 jours est terminé. Passez à un plan payant pour continuer !");
-      go("pricing"); return;
-    }
+    if (expired) { alert("Votre essai gratuit de 14 jours est terminé. Passez à un plan payant pour continuer !"); go("pricing"); return; }
     const limitReached = await checkCvLimit(session.email);
-    if (limitReached) {
-      alert("Vous avez atteint votre limite de CV ce mois-ci. Passez à un plan supérieur !");
-      go("pricing"); return;
-    }
+    if (limitReached) { alert("Vous avez atteint votre limite de CV ce mois-ci. Passez à un plan supérieur !"); go("pricing"); return; }
   }
   const job = document.getElementById('job-desc').value.trim();
   if (!job || cvList.length === 0) return;
   const btn = document.getElementById('go-btn');
-  btn.disabled = true; btn.textContent = 'Analyse en cours...';
+  btn.disabled = true;
+  btn.innerHTML = '<span class="btn-spin"></span>Analyse en cours...';
   results = [];
   switchDTab('results');
   document.getElementById('metrics-row').style.display = 'none';
@@ -745,7 +730,6 @@ async function analyze() {
   mr.style.display = 'grid';
   document.getElementById('exp-btn').style.display = 'flex';
 
-  // Sauvegarde stats utilisateur
   if (session) {
     const u = users[session.email];
     u.cvCount = (u.cvCount || 0) + results.length;
@@ -753,15 +737,7 @@ async function analyze() {
     u.totalConv = (u.totalConv || 0) + conv;
     u.allScores = [...(u.allScores || []), ...results.map(r => r.score)];
     localStorage.setItem('rai_users', JSON.stringify(users));
-
-    const camp = {
-      id: Date.now(),
-      date: new Date().toLocaleDateString('fr-FR'),
-      job: job.slice(0, 70) + '...',
-      count: results.length,
-      avg, conv,
-      results: [...results]
-    };
+    const camp = { id: Date.now(), date: new Date().toLocaleDateString('fr-FR'), job: job.slice(0, 70) + '...', count: results.length, avg, conv, results: [...results] };
     history.unshift(camp);
     localStorage.setItem('rai_history', JSON.stringify(history));
     renderHistory();
@@ -771,22 +747,13 @@ async function analyze() {
   btn.textContent = 'Lancer l\'analyse IA';
 }
 
-// ─── HISTORIQUE ───
 function renderHistory() {
   const el = document.getElementById('hist-list');
-  if (!history.length) {
-    el.innerHTML = '<div class="empty">Aucune campagne pour l\'instant. Lancez votre première analyse !</div>';
-    return;
-  }
+  if (!history.length) { el.innerHTML = '<div class="empty">Aucune campagne pour l\'instant. Lancez votre première analyse !</div>'; return; }
   el.innerHTML = history.map(h => `
     <div class="hist-row" onclick="showHistDetail(${h.id})">
-      <div class="hist-ic">
-        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-      </div>
-      <div>
-        <div class="hist-name">${h.job}</div>
-        <div class="hist-meta">${h.date} · ${h.count} CV analysés · score moy. ${h.avg}/100</div>
-      </div>
+      <div class="hist-ic"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+      <div><div class="hist-name">${h.job}</div><div class="hist-meta">${h.date} · ${h.count} CV analysés · score moy. ${h.avg}/100</div></div>
       <div class="hist-badge">${h.conv} à convoquer</div>
     </div>`).join('');
 }
@@ -806,13 +773,9 @@ function showHistDetail(id) {
   switchDTab('results');
 }
 
-// ─── EXPORT CSV ───
 function exportCSV() {
   if (!results.length) return;
-  const rows = [
-    '"Nom","Poste","Score","Recommandation","Résumé"',
-    ...results.map(r => `"${r.name}","${r.title}",${r.score},"${r.recommendation}","${r.summary.replace(/"/g, "'")}"`)
-  ];
+  const rows = ['"Nom","Poste","Score","Recommandation","Résumé"', ...results.map(r => `"${r.name}","${r.title}",${r.score},"${r.recommendation}","${r.summary.replace(/"/g, "'")}"`)];
   const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -821,7 +784,6 @@ function exportCSV() {
   URL.revokeObjectURL(a.href);
 }
 
-// ─── FAQ ───
 function toggleFaq(el) {
   const item = el.closest('.faq-item');
   const isOpen = item.classList.contains('open');
@@ -829,7 +791,6 @@ function toggleFaq(el) {
   if (!isOpen) item.classList.add('open');
 }
 
-// ─── COLLER UN CV ───
 document.addEventListener('DOMContentLoaded', () => {
   const el = document.getElementById('cv-paste');
   if (el) {
@@ -844,7 +805,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-  // CV exemples préchargés
   cvList.push(
     { name: 'Marie_Dupont.txt', text: 'Marie Dupont\nDéveloppeur Full Stack Senior — 6 ans d\'expérience\nCompétences: React, Node.js, TypeScript, AWS, Docker\nFormation: Master Informatique — INSA Lyon\nAnglais courant, certifié AWS, Scrum Master.' },
     { name: 'Thomas_Martin.txt', text: 'Thomas Martin\nDéveloppeur Frontend Junior — 1 an d\'expérience\nCompétences: HTML, CSS, jQuery, notions React\nFormation: BTS SIO\nAnglais scolaire, pas d\'expérience cloud.' }
@@ -864,7 +824,6 @@ updateNav();
       <h1>Créé pour simplifier le recrutement</h1>
       <p>RecruitAI est un outil SaaS français qui automatise le tri de CV grâce à l'intelligence artificielle, pour que vos équipes RH se concentrent sur l'essentiel : les humains.</p>
     </div>
-
     <div class="founder-card">
       <div class="founder-av">AI</div>
       <div class="founder-info">
@@ -873,9 +832,7 @@ updateNav();
         <a href="mailto:arthurinizan@gmail.com">arthurinizan@gmail.com</a>
       </div>
     </div>
-
     <div class="section-tag" style="margin-bottom:.75rem">Mentions légales</div>
-
     <div class="legal-block">
       <h3>Éditeur du site</h3>
       <ul>
@@ -886,7 +843,6 @@ updateNav();
         <li><strong>Directeur de la publication :</strong> Arthur Inizan</li>
       </ul>
     </div>
-
     <div class="legal-block">
       <h3>Hébergeur</h3>
       <ul>
@@ -895,12 +851,10 @@ updateNav();
         <li><strong>Site :</strong> vercel.com</li>
       </ul>
     </div>
-
     <div class="legal-block">
       <h3>Propriété intellectuelle</h3>
       <p>L'ensemble des éléments constituant ce site (textes, graphismes, logiciels, code source, marque RecruitAI) est la propriété exclusive d'Arthur Inizan et est protégé par le droit français de la propriété intellectuelle. Toute reproduction, représentation ou diffusion, totale ou partielle, sans autorisation écrite préalable est interdite.</p>
     </div>
-
     <div class="legal-block">
       <h3>Données personnelles &amp; RGPD</h3>
       <p><strong>Responsable du traitement :</strong> Arthur Inizan — arthurinizan@gmail.com</p>
@@ -914,25 +868,21 @@ updateNav();
       <p><strong>Vos droits :</strong> conformément au Règlement (UE) 2016/679 (RGPD) et à la loi Informatique et Libertés, vous disposez d'un droit d'accès, de rectification, d'effacement, de limitation et de portabilité de vos données. Pour exercer ces droits : <a href="mailto:arthurinizan@gmail.com" style="color:var(--accent-text)">arthurinizan@gmail.com</a>.</p>
       <p><strong>Cookies :</strong> ce site n'utilise pas de cookies tiers à des fins publicitaires ou analytiques.</p>
     </div>
-
     <div class="legal-block">
       <h3>Conditions générales d'utilisation</h3>
       <p>L'accès et l'utilisation de RecruitAI impliquent l'acceptation des présentes conditions. Le service est fourni « en l'état » dans le cadre d'un abonnement mensuel sans engagement. L'utilisateur est seul responsable des données (CV, fiches de poste) qu'il soumet à l'analyse et garantit disposer des autorisations nécessaires pour traiter ces données personnelles de candidats.</p>
       <p><strong>Droit de rétractation (particuliers) :</strong> conformément à l'article L221-18 du Code de la consommation, vous disposez d'un délai de 14 jours à compter de la souscription pour exercer votre droit de rétractation, sauf si vous avez expressément renoncé à ce droit en demandant l'accès immédiat au service.</p>
       <p><strong>Résiliation :</strong> l'abonnement peut être résilié à tout moment depuis votre espace client, sans frais, avec effet à la fin de la période en cours.</p>
     </div>
-
     <div class="legal-block">
       <h3>Responsabilité et limitation</h3>
       <p>RecruitAI est un outil d'aide à la décision. Les scores et recommandations générés par l'IA sont fournis à titre indicatif et ne sauraient constituer la seule base d'une décision de recrutement. Arthur Inizan décline toute responsabilité quant à l'utilisation des résultats fournis par le service.</p>
       <p>RecruitAI se réserve le droit de modifier ou interrompre le service à tout moment, avec un préavis raisonnable communiqué par email.</p>
     </div>
-
     <div class="legal-block">
       <h3>Droit applicable &amp; juridiction</h3>
       <p>Les présentes mentions légales sont régies par le droit français. En cas de litige, et à défaut de résolution amiable, les tribunaux français seront seuls compétents.</p>
     </div>
-
     <p class="legal-note">Mentions légales mises à jour le 31 mars 2026 — conformes à la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique (LCEN) et au Règlement (UE) 2016/679 (RGPD).</p>
   </div>
 </div>
